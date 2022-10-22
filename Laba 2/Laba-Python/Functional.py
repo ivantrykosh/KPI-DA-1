@@ -33,6 +33,9 @@ class General:
              [0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
              [0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0],
              [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0]]
+        self.EDGES = ["red", "blue", "yellow", "green", "silver", "gray", "maroon", "olive", "lime", "aqua",
+                      "teal", "navy", "fuchsia", "purple", "indianred", "khaki", "salmon", "peachpuff", "lightyellow",
+                      "chocolate", "firebrick", "azure", "coral", "orange", "tan"]
         self.COLORS = ["red", "blue", "yellow", "green"]
         self.POSITION = {1: (600, 550), 2: (346, 281), 3: (196, 94), 4: (608, 310), 5: (747, 314), 6: (348, 144), 7: (101, 302),
                8: (668, 387), 9: (175, 289),
@@ -42,6 +45,11 @@ class General:
                25: (490, 84)}
         self.Start_edge = self.Edge = 0
         self.Result = None
+
+        # Для тестування
+        self.Number_of_iterations = 0
+        self.Number_of_conditions = 0
+        self.Number_of_dead_ends = 0
         return
 
     def drow_graph(self, edges):
@@ -66,7 +74,7 @@ class General:
 
     def set_Start_edge(self, edge):
         """Початкова вершина (початковий стан)"""
-        self.Start_edge = self.Edge = random.randint(0, len(self.GRAPH) - 1)
+        self.Start_edge = self.Edge = edge
         return self.Start_edge
 
     def number_of_colors(self, edges):
@@ -83,15 +91,13 @@ class Algorithm_Hill(General):
     def __init__(self):
         """Конструктор"""
         super().__init__()
-        self.EDGES = ["red", "blue", "yellow", "green", "silver", "gray", "maroon", "olive", "lime", "aqua",
-                 "teal", "navy", "fuchsia", "purple", "indianred", "khaki", "salmon", "peachpuff", "lightyellow",
-                 "chocolate", "firebrick", "azure", "coral", "orange", "tan"]
         random.shuffle(self.EDGES)
         return
 
     def check(self, index, edges, color):
         """Перевірка фарбування"""
         for i in range(len(self.GRAPH[index])):
+            self.Number_of_iterations += 1
             if self.GRAPH[index][i] == 1:
                 if color == edges[i]:
                     return False
@@ -103,8 +109,11 @@ class Algorithm_Hill(General):
         flag = True
         flags = [True for i in range(len(edges))]
         while flag:
+            self.Number_of_iterations += 1
             if flags[self.Edge]:
+                self.Number_of_conditions += 1
                 for color in self.COLORS:
+                    self.Number_of_iterations += 1
                     if self.check(self.Edge, edges, color):
                         edges[self.Edge] = color
                         flags[self.Edge] = False
@@ -114,6 +123,7 @@ class Algorithm_Hill(General):
             else:
                 temp = self.Edge
                 for i in range(len(edges)):
+                    self.Number_of_iterations += 1
                     if self.GRAPH[self.Edge][i] == 1:
                         if flags[i]:
                             self.Edge = i
@@ -125,8 +135,11 @@ class Algorithm_Hill(General):
     def side_movement(self, edges):
         """Рух убік"""
         for i in range(100):
+            self.Number_of_iterations += 1
+            self.Number_of_conditions += 1
             colours = []
             for color in self.COLORS:
+                self.Number_of_iterations += 1
                 if self.check(self.Edge, edges, color):
                     colours += [color]
             if len(colours) > 0:
@@ -135,6 +148,7 @@ class Algorithm_Hill(General):
 
             Edges = []
             for i in range(len(edges)):
+                self.Number_of_iterations += 1
                 if self.GRAPH[self.Edge][i] == 1:
                     Edges += [i]
             self.Edge = random.choice(Edges)
@@ -147,6 +161,7 @@ class Algorithm_Hill(General):
             edges = self.Hill()
             if self.number_of_colors(edges) > 4:
                 for j in range(5):
+                    self.Number_of_dead_ends += 1
                     edges = self.side_movement(edges.copy())
                     if self.number_of_colors(edges) < self.number_of_colors(self.Result):
                         self.Result = edges
@@ -161,7 +176,7 @@ class Algorithm_Hill(General):
         return self.Result
 
 class Algorithm_Backtracking(General):
-    """Алгоритм з поверненням (backtracking)"""
+    """Алгоритм з пошуку поверненням (backtracking)"""
 
     def __init__(self):
         """Конструктор"""
@@ -175,16 +190,21 @@ class Algorithm_Backtracking(General):
             if i in result:
                 res += [result[i]]
             else:
-                res += ["white"]
+                for color in self.EDGES:
+                    if not color in res:
+                        res += [color]
+                        break
         return res
 
     def mrv(self, edges):
         """Визначення фарбування вузла"""
         numbers = {}
         for i in range(len(self.GRAPH)):
+            self.Number_of_iterations += 1
             if not i in edges:
                 numbers[i] = self.COLORS.copy()
                 for j in range(len(self.GRAPH)):
+                    self.Number_of_iterations += 1
                     if self.GRAPH[i][j]:
                         if j in edges:
                             if edges[j] in numbers[i]:
@@ -192,24 +212,26 @@ class Algorithm_Backtracking(General):
         min = len(self.COLORS) + 1
         index = None
         for i in numbers:
+            self.Number_of_iterations += 1
             if len(numbers[i]) < min:
                 min = len(numbers[i])
                 index = i
-        if min == 0:
-            return -1, []
-        if min == 5:
+        if min == 0 or min == 5:
             return -1, []
         return index, numbers[index]
 
     def Backtracking(self, edge, edges, colors):
         """Пошук з поверненням"""
         for i in colors:
+            self.Number_of_iterations += 1
+            self.Number_of_conditions += 1
             if len(edges) == len(self.GRAPH):
                 self.Result = edges
                 break
             edges[edge] = i
             edge, colours = self.mrv(edges)
             if edge == -1:
+                self.Number_of_dead_ends += 1
                 if len(self.Result) < len(edges):
                     self.Result = edges
                 break
