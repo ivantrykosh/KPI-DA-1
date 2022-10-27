@@ -1,7 +1,6 @@
 import Functional
 
 def main():
-    test = None
     if int(input("Choose algorithm (0 - Hill, 1 - Backtracking): ")) == 0:
         test = Functional.Algorithm_Hill()
         test.drow_graph(test.EDGES)

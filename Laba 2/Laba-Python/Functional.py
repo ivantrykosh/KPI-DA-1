@@ -132,7 +132,7 @@ class Algorithm_Hill(General):
                     flag = False
         return edges
 
-    def side_movement(self, edges):
+    def side_movement(self, edges, edge):
         """Рух убік"""
         for i in range(100):
             self.Number_of_iterations += 1
@@ -140,18 +140,29 @@ class Algorithm_Hill(General):
             colours = []
             for color in self.COLORS:
                 self.Number_of_iterations += 1
-                if self.check(self.Edge, edges, color):
+                if self.check(edge, edges, color):
                     colours += [color]
             if len(colours) > 0:
-                colour = random.choice(colours)
-                edges[self.Edge] = colour
-
+                flag = True
+                for i in colours:
+                    self.Number_of_iterations += 1
+                    temp = edges.copy()
+                    temp[edge] = i
+                    if self.number_of_colors(temp) < self.number_of_colors(edges):
+                        edges[edge] = i
+                        flag = False
+                        break
+                if flag:
+                    colour = random.choice(colours)
+                    edges[edge] = colour
+            if self.number_of_colors(edges) <= 4:
+                break
             Edges = []
             for i in range(len(edges)):
                 self.Number_of_iterations += 1
-                if self.GRAPH[self.Edge][i] == 1:
+                if self.GRAPH[edge][i] == 1:
                     Edges += [i]
-            self.Edge = random.choice(Edges)
+            edge = random.choice(Edges)
         return edges
 
     def start(self):
@@ -162,7 +173,7 @@ class Algorithm_Hill(General):
             if self.number_of_colors(edges) > 4:
                 for j in range(5):
                     self.Number_of_dead_ends += 1
-                    edges = self.side_movement(edges.copy())
+                    edges = self.side_movement(edges.copy(), self.Edge)
                     if self.number_of_colors(edges) < self.number_of_colors(self.Result):
                         self.Result = edges
                     if self.number_of_colors(edges) <= 4:
@@ -216,7 +227,7 @@ class Algorithm_Backtracking(General):
             if len(numbers[i]) < min:
                 min = len(numbers[i])
                 index = i
-        if min == 0 or min == 5:
+        if min == 0 or min == len(self.COLORS) + 1:
             return -1, []
         return index, numbers[index]
 
