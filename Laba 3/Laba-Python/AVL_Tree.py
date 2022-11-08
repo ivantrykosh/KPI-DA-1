@@ -11,20 +11,21 @@ class TreeNode:
 
 class AVL_Tree:
     """АВЛ дерево"""
-    def insert(self, node, key, data):
+    def insert_node(self, node, key, data):
         """Вставка вузла в дерево"""
+        is_insert = True
         if not node:
-            return TreeNode(key, data)
+            return TreeNode(key, data), is_insert
         elif key < node.key:
-            node.left = self.insert(node.left, key, data)
+            node.left, is_insert = self.insert_node(node.left, key, data)
         elif key > node.key:
-            node.right = self.insert(node.right, key, data)
+            node.right, is_insert = self.insert_node(node.right, key, data)
         else:
-            print("Error: the keys are the same!")
-            return TreeNode(-1, "")
+            is_insert = False
+            return node, is_insert
         node.height = 1 + (self.get_height(node.left) if self.get_height(node.left) > self.get_height(node.right) else self.get_height(node.right))
         node = self.balance(node)
-        return node
+        return node, is_insert
 
     def balance(self, node):
         """Балансування дерева"""
@@ -90,59 +91,63 @@ class AVL_Tree:
             return node
         return self.get_max_node(node.right)
 
-    def delete(self, node, key):
+    def delete_node(self, node, key):
         """Видалення елемента за ключем"""
+        data = None
         if not node:
-            return node
+            return node, data
         elif key < node.key:
-            node.left = self.delete(node.left, key)
+            node.left, data = self.delete_node(node.left, key)
         elif key > node.key:
-            node.right = self.delete(node.right, key)
+            node.right, data = self.delete_node(node.right, key)
         else:
             if not node.left:
                 temp = node.right
+                data = node.data
                 node = None
-                return temp
+                return temp, data
             elif not node.right:
                 temp = node.left
                 node = None
-                return temp
+                return temp, data
 
             if self.get_balance(node) < 0:
                 temp = self.get_min_node(node.right)
                 node.key, node.data = temp.key, temp.data
-                node.right = self.delete(node.right, node.key)
+                node.right, data = self.delete_node(node.right, node.key)
             elif self.get_balance(node) > 0:
                 temp = self.get_max_node(node.left)
                 node.key, node.data = temp.key, temp.data
-                node.left = self.delete(node.left, node.key)
+                node.left, data = self.delete_node(node.left, node.key)
             else:
                 if node.key - node.left.key < node.right.key - node.key:
                     temp = self.get_max_node(node.left)
                     node.key, node.data = temp.key, temp.data
-                    node.left = self.delete(node.left, node.key)
+                    node.left, data = self.delete_node(node.left, node.key)
                 else:
                     temp = self.get_min_node(node.right)
                     node.key, node.data = temp.key, temp.data
-                    node.right = self.delete(node.right, node.key)
+                    node.right, data = self.delete_node(node.right, node.key)
 
         if not node:
-            return node
+            return node, data
         node.height = 1 + (self.get_height(node.left) if self.get_height(node.left) > self.get_height(node.right) else self.get_height(node.right))
         node = self.balance(node)
-        return node
+        return node, data
 
     def change_node(self, node, key, new_data):
         """Зміна даних за ключем"""
+        is_change = True
         if not node:
-            return
+            is_change = False
+            return node, is_change
         elif key < node.key:
-            self.change_node(node.left, key, new_data)
+            node.left, is_change = self.change_node(node.left, key, new_data)
         elif key > node.key:
-            self.change_node(node.right, key, new_data)
+            node.right, is_change = self.change_node(node.right, key, new_data)
         else:
             node.data = new_data
-        return
+        return node, is_change
 
     def search_node(self, node, key):
         """Пошук даних за ключем"""
@@ -173,8 +178,8 @@ class AVL_Tree:
             for line in file:
                 line = line[:-1] if line[-1] == "\n" else line
                 data = line.split()
-                int(data[0])
-                node = self.insert(node, data[0], data[1])
+                data[0] = int(data[0])
+                node, temp = self.insert_node(node, data[0], data[1])
         return node
 
     def write_data(self, node, path):
