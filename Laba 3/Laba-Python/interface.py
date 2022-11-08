@@ -2,6 +2,7 @@ import AVL_Tree
 import tkinter as tk
 import tkinter.filedialog
 import tkinter.messagebox
+from random import shuffle
 
 class Window1:
     """Початкове вікно"""
@@ -189,6 +190,9 @@ class Search_record():
                 data = self.Tree.search_node(self.root, key)
                 message = ("Запис знайдено!\nКлюч: " + str(key) + "\nДані: " + str(data)) if data else "Даних за ключем " + str(key) + " не знайдено!"
                 tkinter.messagebox.showinfo(title="Знайти запис", message=message)
+
+                print(f"Число порівнянь для знаходження запису за ключем {key} = {self.Tree.number_comparison}")
+                self.Tree.number_comparison = 0
             except ValueError:
                 tkinter.messagebox.showerror(title="Знайти запис", message="Ключ повинен бути цілим числом!")
         return
@@ -369,64 +373,23 @@ class Change_record():
         return self.Tree, self.root
 
 def main():
-
-    # window = tk.Tk()
-    # window.title("СУБД")
-    # window.geometry("300x200")
-    # window.iconbitmap("logo.ico")
-    #
-    # label = tk.Label(text="Оберіть дію:", background="#d3d3d3", font=("Arial, 13"))
-    # label.pack(pady=5)
-    # button1 = tk.Button(text="Створити базу даних", font=("Arial, 10"), width=20, height=3, background="#d3d3d3")
-    # button1.pack(pady=10)
-    # button2 = tk.Button(text="Обрати базу даних", font=("Arial, 10"), width=20, height=3, background="#d3d3d3")
-    # button2.pack(pady=10)
-    #
-    # window.mainloop()
-
     window = tk.Tk()
     app = Window1(window)
     window.mainloop()
 
     # Tree = AVL_Tree.AVL_Tree()
     # root = None
+    #
+    # keys = [i for i in range(-5000, 5000)]
+    # shuffle(keys)
+    # for i in keys:
+    #     root, temp = Tree.insert_node(root, i, str(i % 2500))
+    #
+    # Tree.write_data(root, "C:/Ivan/DA-Labs/Laba 3/DB10000.txt")
 
-    # root = Tree.insert(root, 9, "jhdkjaqsl")
-    # root = Tree.insert(root, 5, "jhdksjasl")
-    # root = Tree.insert(root, 10, "jhdkjafsl")
-    # root = Tree.insert(root, 0, "jhadkjasl")
-    # root = Tree.insert(root, 6, "jhdakjasl")
-    # root = Tree.insert(root, 11, "jhdkfjasl")
-    # root = Tree.insert(root, -1, "jhdkfjasl")
-    # root = Tree.insert(root, 1, "jhdkfjasl")
-    # root = Tree.insert(root, 2, "jhdkfjasl")
-    # root = Tree.insert(root, 10, "10jhdkjaqsl")
-    # root = Tree.insert(root, 6, "6jhdksjasl")
-    # root = Tree.insert(root, 4, "4jhdkjafsl")
-    # root = Tree.insert(root, 3, "3jhadkjasl")
-    # root = Tree.insert(root, 7, "7jhdakjasl")
-    # root = Tree.insert(root, 16, "16jhdkfjasl")
-    # root = Tree.insert(root, 12, "12jhdkfjasl")
-    # root = Tree.insert(root, 14, "14jhdkfjasl")
-    # root = Tree.insert(root, 22, "22jhdkfjasl")
-    # root = Tree.insert(root, 19, "19jhdkjaqsl")
-    # root = Tree.insert(root, 17, "17jhdksjasl")
-    # root = Tree.insert(root, 21, "21jhdkjafsl")
-    # root = Tree.insert(root, 24, "24jhadkjasl")
-
-    # Tree.Print(root)
-
-    # root = Tree.Delete(root, 10)
-    # root = Tree.delete(root, 10)
-    # print()
-    # Tree.Print(root)
-
-    # Tree.change_node(root, 24, "24qwerytuiopuytrtyuiop")
-    # print()
-    # Tree.Print(root)
-
+    # root, temp = Tree.delete_node(root, )
+    # root, temp = Tree.change_node(root, , "")
     # data = Tree.search_node(root, 3)
-    # print(3, data)
 
     return
 

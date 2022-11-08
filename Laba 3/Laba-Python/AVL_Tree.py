@@ -11,6 +11,7 @@ class TreeNode:
 
 class AVL_Tree:
     """АВЛ дерево"""
+    number_comparison = 0
     def insert_node(self, node, key, data):
         """Вставка вузла в дерево"""
         is_insert = True
@@ -152,6 +153,7 @@ class AVL_Tree:
     def search_node(self, node, key):
         """Пошук даних за ключем"""
         data = None
+        self.number_comparison += 1
         if not node:
             return data
         elif key < node.key:
