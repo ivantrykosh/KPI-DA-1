@@ -1,4 +1,5 @@
 import random
+import time
 
 GAME_FIELD1 = [[0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
                [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
@@ -36,6 +37,7 @@ class Game():
         self.players = [Player('Player 1 (PC)', self.colors[0]), Player('Player 2 (user)', self.colors[1])]
         self.players_number = len(self.players)
         self.index_current_player = self.set_first_player()
+        # self.index_current_player = 0
         self.winner = None
 
         self.max_score = self.size ** 2
@@ -174,14 +176,14 @@ class Game():
         """Знаходження найкращого ходу"""
         best_score = float('inf') if index_player else -float('inf')
         best_move = None
-
         for i in range(self.size):
             for j in range(self.size):
                 if field[i][j] == '0':
                     if self.is_move(field, index_player, [i, j]):
                         field[i][j] = self.players[index_player].color
                         index_next_player = (index_player + 1) % 2
-                        move_score = self.minimax(field, 0, index_next_player)
+                        # move_score = self.minimax(field, 0, index_next_player)
+                        move_score = self.alpha_beta_prunning(field, 0, index_next_player, -float('inf'), float('inf'))
                         field[i][j] = '0'
 
                         if not index_player:
@@ -194,6 +196,56 @@ class Game():
                                 best_move = [i, j]
 
         return best_score, best_move
+
+    def alpha_beta_prunning(self, field, depth, index_player, alpha, beta):
+        """Альфа-бета відсікання"""
+        result = self.is_looser(field, index_player)
+
+        if result:
+            if not index_player:
+                return self.min_score + depth
+            else:
+                return self.max_score - depth
+
+        if not index_player:
+            best_score = -float('inf')
+            is_break = False
+            for i in range(self.size):
+                for j in range(self.size):
+                    if field[i][j] == '0':
+                        if self.is_turn(index_player, [i, j]):
+                            field[i][j] = self.players[index_player].color
+                            index_next_player = (index_player + 1) % 2
+                            best_score = max(best_score, self.alpha_beta_prunning(field, depth + 1, index_next_player, alpha, beta))
+                            field[i][j] = '0'
+                            alpha = max(alpha, best_score)
+                            if beta <= alpha:
+                                is_break = True
+                                break
+                if is_break:
+                    break
+
+            return best_score
+        else:
+            best_score = float('inf')
+            is_break = False
+            for i in range(self.size):
+                for j in range(self.size):
+                    if field[i][j] == '0':
+                        if self.is_turn(index_player, [i, j]):
+                            field[i][j] = self.players[index_player].color
+                            index_next_player = (index_player + 1) % 2
+                            best_score = min(best_score, self.alpha_beta_prunning(field, depth + 1, index_next_player, alpha, beta))
+                            field[i][j] = '0'
+                            beta = min(beta, best_score)
+                            if beta <= alpha:
+                                is_break = True
+                                break
+                if is_break:
+                    break
+
+            return best_score
+        return
 
 def main():
     """Початок гри"""
@@ -243,8 +295,10 @@ def main():
                     break
                 game.set_next_player()
         else:
+            time_start = time.time_ns()
             best_score, best_move = game.find_best_move(game.game_field, game.index_current_player)
-            print('Best score for PC: ', best_score)
+            time_end = time.time_ns()
+            print('Best score for PC: ', best_score, '  Time in miliseconds:', (time_end-time_start) / 1000/ 1000)
             game.set_cell([best_move[0], best_move[1]], game.players[game.index_current_player].color)
             if game.is_winner(game.index_current_player):
                 game.winner = game.players[game.index_current_player]
