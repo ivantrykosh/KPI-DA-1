@@ -18,6 +18,7 @@ GAME_FIELD2 = [['-', '0', '0', '-'],
                ['0', '0', '0', '0'],
                ['-', '0', '0', '-']]
 COLORS = ['red', 'blue']
+GAME_MODES = ['easy', 'medium', 'hard']
 
 class Player():
     """Гравець"""
@@ -29,7 +30,7 @@ class Player():
 
 class Game():
     """Гра"""
-    def __init__(self, GAME_FIELD, COLORS):
+    def __init__(self, GAME_FIELD, COLORS, GAME_MODE):
         """Конструктор"""
         self.size = len(GAME_FIELD)
         self.game_field = GAME_FIELD
@@ -42,6 +43,8 @@ class Game():
 
         self.max_score = self.size ** 2
         self.min_score = -self.max_score
+
+        self.game_mode = GAME_MODE
         return
 
     def set_first_player(self):
@@ -174,28 +177,96 @@ class Game():
 
     def find_best_move(self, field, index_player):
         """Знаходження найкращого ходу"""
-        best_score = float('inf') if index_player else -float('inf')
-        best_move = None
-        for i in range(self.size):
-            for j in range(self.size):
+        # best_score = float('inf') if index_player else -float('inf')
+        # best_move = None
+
+        # if self.game_mode == 'easy':
+        #     best_score = -float('inf') if index_player else float('inf')
+        # elif self.game_mode == 'medium':
+        #     pass
+        scores = {}
+
+        # for i in range(self.size):
+        #     for j in range(self.size):
+        i_list = [i for i in range(self.size)]
+        j_list = [j for j in range(self.size)]
+        random.shuffle(i_list)
+        random.shuffle(j_list)
+        for i in i_list:
+            for j in j_list:
                 if field[i][j] == '0':
                     if self.is_move(field, index_player, [i, j]):
                         field[i][j] = self.players[index_player].color
                         index_next_player = (index_player + 1) % 2
                         # move_score = self.minimax(field, 0, index_next_player)
-                        move_score = self.alpha_beta_prunning(field, 0, index_next_player, -float('inf'), float('inf'))
+                        move_score = self.alpha_beta__prunning(field, 0, index_next_player, -float('inf'), float('inf'))
                         field[i][j] = '0'
+                        scores[i, j] = move_score
 
-                        if not index_player:
-                            if move_score > best_score:
-                                best_score = move_score
-                                best_move = [i, j]
-                        else:
-                            if move_score < best_score:
-                                best_score = move_score
-                                best_move = [i, j]
+                        # if not index_player:
+                        #     if move_score > best_score:
+                        #         best_score = move_score
+                        #         best_move = [i, j]
+                        # else:
+                        #     if move_score < best_score:
+                        #         best_score = move_score
+                        #         best_move = [i, j]
+        move = None
+        score = None
+        if self.game_mode == 'easy':
+            if not index_player:
+                score = float('inf')
+                for i in scores.keys():
+                    if scores[i] < score:
+                        score = scores[i]
+                        move = i
+            else:
+                score = -float('inf')
+                for i in scores.keys():
+                    if scores[i] > score:
+                        score = scores[i]
+                        move = i
+        elif self.game_mode == 'medium':
+            values_sum = 0
+            for i in scores.values():
+                values_sum += i
+            average_value = values_sum // len(scores.values())
+            difference = float('inf')
+            for i in scores.keys():
+                if abs(scores[i] - average_value) < difference:
+                    difference = abs(scores[i] - average_value)
+                    move = i
+                    score = scores[i]
+            # if not index_player:
+            #     score = -float('inf')
+            #     for i in scores.keys():
+            #         if scores[i] > score and scores[i] < self.max_score // 2 + 2:
+            #             score = scores[i]
+            #             move = i
+            # else:
+            #     score = float('inf')
+            #     for i in scores.keys():
+            #         if scores[i] < score and scores[i] > self.min_score // 2 - 2:
+            #             score = scores[i]
+            #             move = i
+            if not move:
+                move = random.choice(scores.keys())
+                score = scores[move]
+        else:
+            if not index_player:
+                score = -float('inf')
+                for i in scores.keys():
+                    if scores[i] > score:
+                        score = scores[i]
+                        move = i
+            else:
+                score = float('inf')
+                for i in scores.keys():
+                    if scores[i] < score:
+                        score = scores[i]
+                        move = i
 
-        return best_score, best_move
+        return score, move
 
     def alpha_beta_prunning(self, field, depth, index_player, alpha, beta):
         """Альфа-бета відсікання"""
@@ -247,6 +318,64 @@ class Game():
             return best_score
         return
 
+    def alpha_beta__prunning(self, field, depth, index_player, alpha, beta):
+        """Альфа-бета відсікання"""
+        result = self.is_looser(field, index_player)
+
+        if result:
+            if not index_player:
+                return self.min_score + depth
+            else:
+                return self.max_score - depth
+
+        if not index_player:
+            best_score = -float('inf')
+            is_break = False
+            i_list = [i for i in range(self.size)]
+            j_list = [j for j in range(self.size)]
+            random.shuffle(i_list)
+            random.shuffle(j_list)
+            for i in i_list:
+                for j in j_list:
+                    if field[i][j] == '0':
+                        if self.is_turn(index_player, [i, j]):
+                            field[i][j] = self.players[index_player].color
+                            index_next_player = (index_player + 1) % 2
+                            best_score = max(best_score, self.alpha_beta_prunning(field, depth + 1, index_next_player, alpha, beta))
+                            field[i][j] = '0'
+                            alpha = max(alpha, best_score)
+                            if beta <= alpha:
+                                is_break = True
+                                break
+                if is_break:
+                    break
+
+            return best_score
+        else:
+            best_score = float('inf')
+            is_break = False
+            i_list = [i for i in range(self.size)]
+            j_list = [j for j in range(self.size)]
+            random.shuffle(i_list)
+            random.shuffle(j_list)
+            for i in i_list:
+                for j in j_list:
+                    if field[i][j] == '0':
+                        if self.is_turn(index_player, [i, j]):
+                            field[i][j] = self.players[index_player].color
+                            index_next_player = (index_player + 1) % 2
+                            best_score = min(best_score, self.alpha_beta_prunning(field, depth + 1, index_next_player, alpha, beta))
+                            field[i][j] = '0'
+                            beta = min(beta, best_score)
+                            if beta <= alpha:
+                                is_break = True
+                                break
+                if is_break:
+                    break
+
+            return best_score
+        return
+
 def main():
     """Початок гри"""
     GAME_FIELD = [['-', '0', '0', '-'],
@@ -273,7 +402,7 @@ def main():
     #         game.set_next_player()
 
     # --------------------------------------------------------------------
-    game = Game(GAME_FIELD, COLORS)
+    game = Game(GAME_FIELD, COLORS, GAME_MODES[1])
 
     while True:
         print('-' * 100)
