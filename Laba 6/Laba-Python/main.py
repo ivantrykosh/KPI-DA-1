@@ -156,10 +156,10 @@ class Game():
     min_score - ;
     game_mode -
     """
-    def __init__(self, GAME_FIELD, COLORS, GAME_MODE):
+    def __init__(self, Game_Field, COLORS, GAME_MODE):
         """Створення гри"""
-        self.size = len(GAME_FIELD)
-        self.game_field = GAME_FIELD
+        self.size = len(Game_Field)
+        self.game_field = Game_Field
         self.colors = COLORS
         random.shuffle(self.colors)
         self.players = [Player('Player 1 (PC)', self.colors[0], False), Player('Player 2 (user)', self.colors[1], False)]
@@ -344,7 +344,13 @@ class Game():
 
 def main():
     """Початок гри"""
-    game = Game(GAME_FIELD, COLORS, GAME_MODES[2])
+    game_field = []
+    for i in range(len(GAME_FIELD)):
+        temp = []
+        for j in range(len(GAME_FIELD[i])):
+            temp += [GAME_FIELD[i][j]]
+        game_field += [temp]
+    game = Game(game_field, COLORS, GAME_MODES[2])
 
     while True:
         print('-' * 100)
