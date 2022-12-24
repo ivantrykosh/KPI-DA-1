@@ -1,4 +1,4 @@
-# import pygame
+﻿# import pygame
 #
 # pygame.init()
 # size = w, h = 500, 400
@@ -110,6 +110,8 @@ class Labels_and_Moves():
         """Якщо є переможець, то вивести повідомлення та закрити вікно"""
         if self.game.is_winner(self.game.game_field, self.game.index_current_player):
             self.game.winner = self.game.players[self.game.index_current_player]
+            for i in range(len(self.Labels)):
+                self.Labels[i].bind('<Button-1>', partial(self.nothing))
             tkinter.messagebox.showinfo(title='Snort', message='Переможець - ' + self.game.winner.name + '; колір - ' + self.game.winner.color)
             # self.game.game_field = Game.GAME_FIELD.copy()
             self.mainwindow.deiconify()
@@ -137,6 +139,9 @@ class Labels_and_Moves():
     def set_color(self, i, j, color):
         index = i * self.game.size + j
         self.Labels[index].config(bg=color)
+        return
+
+    def nothing(self, *args):
         return
 
 class BoardWindow():
@@ -171,11 +176,13 @@ class BoardWindow():
         if move:
             self.Labels.set_color(move[0], move[1], self.GAME.players[self.GAME.index_current_player].color)
             self.GAME.set_cell([move[0], move[1]], self.GAME.players[self.GAME.index_current_player].color)
-            if self.GAME.is_winner(self.GAME.game_field, self.GAME.index_current_player):
-                self.GAME.winner = self.GAME.players[self.GAME.index_current_player]
-                tkinter.messagebox.showinfo(title='Snort', message='Переможець - ' + self.GAME.winner.name + '; колір - ' + self.GAME.winner.color)
-                # self.game.game_field = Game.GAME_FIELD.copy()
-                self.exit()
+            # if self.GAME.is_winner(self.GAME.game_field, self.GAME.index_current_player):
+            #     self.GAME.winner = self.GAME.players[self.GAME.index_current_player]
+            #     for i in range(len(self.Labels.Labels)):
+            #         self.Labels.Labels[i].bind('<Button-1>', partial(self.Labels.nothing))
+            #     tkinter.messagebox.showinfo(title='Snort', message='Переможець - ' + self.GAME.winner.name + '; колір - ' + self.GAME.winner.color)
+            #     # self.game.game_field = Game.GAME_FIELD.copy()
+            #     self.exit()
             self.GAME.set_next_player()
 
         self.master.protocol("WM_DELETE_WINDOW", self.exit)
