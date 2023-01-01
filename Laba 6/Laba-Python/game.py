@@ -1,15 +1,15 @@
 import random
 import time
-
-GAME_FIELD = [['-', '0', '0', '-'],
-               ['0', '0', '0', '0'],
-               ['0', '0', '0', '0'],
-               ['-', '0', '0', '-']]
-COLORS = ['red', 'blue']
-GAME_MODES = ['easy', 'medium', 'hard']
+import constants as const
 
 class Algorithm():
-    """Клас з алгоритмом альфа-бета відсікань"""
+    """
+    Клас з алгоритмом альфа-бета відсікань
+
+    :param game: об'єкт класу Game
+    :param max_score: максимальний результат, що може отримати гравець
+    :param min_score: мінімальний результат, що може отримати гравець
+    """
     def __init__(self, game):
         """Конструктор"""
         self.game = game
@@ -119,10 +119,13 @@ class Algorithm():
         return
 
 class Player():
-    """Гравець:
-    name - ім'я гравця;
-    color - колір гравця;
-    is_max- чи є гравець max"""
+    """
+    Гравець
+
+    :param name: ім'я гравця
+    :param color: колір гравця
+    :param is_max: чи є гравець max
+    """
     def __init__(self, name, color, is_max):
         """Створення гравця"""
         self.name = name
@@ -144,17 +147,17 @@ class Player():
         return
 
 class Game():
-    """Гра:
-    size - розмір ігрового поля;
-    game_field - ігрове поле;
-    colors - ;
-    players - ;
-    players_number - ;
-    index_current_player - ;
-    winner - ;
-    max_score - ;
-    min_score - ;
-    game_mode -
+    """
+    Гра
+
+    :param size: розмір ігрового поля
+    :param game_field: ігрове поле
+    :param colors: кольори
+    :param players: гравці
+    :param players_number: кількість гравців
+    :param index_current_player: індекс поточного гравця (гравця, яких зараз ходить)
+    :param winner: переможець гри
+    :param game_mode: режим гри
     """
     def __init__(self, Game_Field, COLORS, GAME_MODE):
         """Створення гри"""
@@ -167,8 +170,6 @@ class Game():
         self.index_current_player = self.set_first_player()
         self.players[self.index_current_player].set_is_max(True)
         self.winner = None
-        # self.max_score = self.size ** 2
-        # self.min_score = -self.max_score
         self.game_mode = GAME_MODE
         return
 
@@ -241,116 +242,15 @@ class Game():
         index_opp_player = (index_player + 1) % self.players_number
         return self.is_looser(field, index_opp_player)
 
-    # def find_best_move(self, field, index_player):
-    #     """Знаходження найкращого ходу"""
-    #     scores = {}
-    #     is_max = self.players[index_player].is_max
-    #     indexes = [[i, j] for i in range(self.size) for j in range(self.size)]
-    #     random.shuffle(indexes)
-    #     for i, j in indexes:
-    #         if field[i][j] == '0':
-    #             if self.is_move(field, index_player, [i, j]):
-    #                 field[i][j] = self.players[index_player].color
-    #                 move_score = self.alpha_beta_prunning(field, 0, not is_max, -float('inf'), float('inf'))
-    #                 field[i][j] = '0'
-    #                 scores[i, j] = move_score
-    #     move = None
-    #     score = None
-    #     if self.game_mode == 'easy':
-    #         if is_max:
-    #             score = float('inf')
-    #             for i in scores.keys():
-    #                 if scores[i] < score:
-    #                     score = scores[i]
-    #                     move = i
-    #         else:
-    #             score = -float('inf')
-    #             for i in scores.keys():
-    #                 if scores[i] > score:
-    #                     score = scores[i]
-    #                     move = i
-    #     elif self.game_mode == 'medium':
-    #         values_sum = 0
-    #         for i in scores.values():
-    #             values_sum += i
-    #         average_value = values_sum // len(scores.values())
-    #         difference = float('inf')
-    #         for i in scores.keys():
-    #             if abs(scores[i] - average_value) < difference:
-    #                 difference = abs(scores[i] - average_value)
-    #                 move = i
-    #                 score = scores[i]
-    #         if not move:
-    #             move = random.choice(scores.keys())
-    #             score = scores[move]
-    #     elif self.game_mode == 'hard':
-    #         if is_max:
-    #             score = -float('inf')
-    #             for i in scores.keys():
-    #                 if scores[i] > score:
-    #                     score = scores[i]
-    #                     move = i
-    #         else:
-    #             score = float('inf')
-    #             for i in scores.keys():
-    #                 if scores[i] < score:
-    #                     score = scores[i]
-    #                     move = i
-    #
-    #     return score, move
-    #
-    # def alpha_beta_prunning(self, field, depth, is_max, alpha, beta):
-    #     """Альфа-бета відсікання"""
-    #     index_player = 0
-    #     if self.players[index_player].is_max != is_max:
-    #         index_player = 1
-    #     result = self.is_looser(field, index_player)
-    #
-    #     if result:
-    #         if is_max:
-    #             return self.min_score + depth
-    #         else:
-    #             return self.max_score - depth
-    #
-    #     if is_max:
-    #         best_score = -float('inf')
-    #         indexes = [[i, j] for i in range(self.size) for j in range(self.size)]
-    #         random.shuffle(indexes)
-    #         for i, j in indexes:
-    #             if field[i][j] == '0':
-    #                 if self.is_move(field, index_player, [i, j]):
-    #                     field[i][j] = self.players[index_player].color
-    #                     best_score = max(best_score, self.alpha_beta_prunning(field, depth + 1, not is_max, alpha, beta))
-    #                     field[i][j] = '0'
-    #                     alpha = max(alpha, best_score)
-    #                     if beta <= alpha:
-    #                         break
-    #         return best_score
-    #     else:
-    #         best_score = float('inf')
-    #         indexes = [[i, j] for i in range(self.size) for j in range(self.size)]
-    #         random.shuffle(indexes)
-    #         for i, j in indexes:
-    #             if field[i][j] == '0':
-    #                 if self.is_move(field, index_player, [i, j]):
-    #                     field[i][j] = self.players[index_player].color
-    #                     best_score = min(best_score, self.alpha_beta_prunning(field, depth + 1, not is_max, alpha, beta))
-    #                     field[i][j] = '0'
-    #                     beta = min(beta, best_score)
-    #                     if beta <= alpha:
-    #                         break
-    #         return best_score
-    #     return
-
 def main():
-    """Початок гри"""
+    """Початок консольної гри"""
     game_field = []
-    for i in range(len(GAME_FIELD)):
+    for i in range(len(const.GAME_FIELD)):
         temp = []
-        for j in range(len(GAME_FIELD[i])):
-            temp += [GAME_FIELD[i][j]]
+        for j in range(len(const.GAME_FIELD[i])):
+            temp += [const.GAME_FIELD[i][j]]
         game_field += [temp]
-    game = Game(game_field, COLORS, GAME_MODES[2])
+    game = Game(game_field, const.COLORS, const.GAME_MODES[2])
 
     while True:
         print('-' * 100)
@@ -374,7 +274,6 @@ def main():
         else:
             algorithm = Algorithm(game)
             time_start = time.time_ns()
-            # best_score, best_move = game.find_best_move(game.game_field, game.index_current_player)
             best_score, best_move = algorithm.find_best_move(game.game_field, game.index_current_player)
             time_end = time.time_ns()
             print('Score for PC: ', best_score, '  Time in miliseconds:', (time_end-time_start) / 1000 / 1000)
